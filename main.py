@@ -6,14 +6,14 @@ import os.path
 import shutil
 import xlsxwriter
 
-src_folder_path = r'\\fr05245vma\Reports\GM\Traceability_reports'
+src_folder_path = r'\\cw01.contiwan.com\SMT\didr2537\Reports\GM\Traceability_reports'
 des_folder_path = r'C:\Francis\Conti\GM\Reports\Requirement_Allocation'
-file_type = r'\*xlsx'
+file_type = r'\G*xlsx'
 
 def FilterReqTraceReport(file_name, path_len, des_directory):
 
     # Create a Panda dataframe by reading in a particular sheet
-    data = pd.read_excel(file_name, sheet_name='SyRD Full Traceability')
+    data = pd.read_excel(file_name, sheet_name='SyRD Full Traceability', engine='openpyxl')
 
     # Create new file from template
     new_file = f'{des_directory}\\FILTER_{file_name[int(path_len) + 1:]}'
@@ -52,6 +52,8 @@ def FilterReqTraceReport(file_name, path_len, des_directory):
 files = glob.glob(src_folder_path + file_type)
 proces_this_file = max(files, key=os.path.getctime)
 print('Processing the file - ' + proces_this_file)
+
+
 
 # start filtering the trace report
 FilterReqTraceReport(proces_this_file, len(src_folder_path), des_folder_path)
