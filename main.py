@@ -12,39 +12,55 @@ file_type = r'\G*xlsx'
 
 def FilterReqTraceReport(file_name, path_len, des_directory):
 
-    # Create a Panda dataframe by reading in a particular sheet
-    data = pd.read_excel(file_name, sheet_name='SyRD Full Traceability', engine='openpyxl')
-
     # Create new file from template
-    new_file = f'{des_directory}\\FILTER_{file_name[int(path_len) + 1:]}'
-    shutil.copyfile(f'{des_directory}\\template.xlsx', new_file)
-    print(f'Preparing the file - {new_file}')
+    new_file_name = f'{des_directory}\\FILTER_{file_name[int(path_len) + 1:]}'
+    shutil.copyfile(f'{des_directory}\\template.xlsx', new_file_name)
+    print(f'Preparing the file - {new_file_name}')
+
+    # Create a Panda dataframe by reading in a particular sheet
+    data_read_in = pd.read_excel(file_name, sheet_name='SyRD Full Traceability', engine='openpyxl')
+
+    # Remove all the duplicate items
+    data_read_in.drop_duplicates(subset=['SyRD ID', 'SyRD Responsible'], keep='first', inplace=True)
+
+    # remove rows base on conditions
+    data_read_in.drop(data_read_in[data_read_in['SyRD State'] != 'Released'].index, inplace=True)
+    data_read_in.drop(data_read_in[data_read_in['ProdApp - GM Gen 12'] != 'Accepted'].index, inplace=True)
+
+    data_read_in.reset_index(drop=True)
+
+    data_rows = len(data_read_in.index)
+ #   print(f"data_read_in has {data_rows} rows")
 
     # New method:
     # append a new sheet to a template file
-    #book = load_workbook(new_file)
-    #writer = pd.ExcelWriter(new_file, engine='openpyxl')
-    #writer.book = book
-    #writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
+    # book = load_workbook(new_file_name)
+    # writer = pd.ExcelWriter(new_file_name, engine='openpyxl')
+    # writer.book = book
+    # writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
 
     # Original method:
     # create a new file or overwrite it
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter(new_file, engine='xlsxwriter')
+#with pd.ExcelWriter(new_file_name, engine='xlsxwriter') as writer:
 
-    # Remove all the duplicate items
-    data.drop_duplicates(subset=['SyRD ID', 'SyRD Responsible'], keep='first', inplace=True)
+    with pd.ExcelWriter(new_file_name, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
+        data_read_in.to_excel(writer, sheet_name="RAW Data")
+#    ws = writer["RAW Data"]
+#    ws.delete_rows(0, 10)
 
-    # remove rows base on conditions
-    data.drop(data[data['SyRD State'] != 'Released'].index, inplace=True)
-    data.drop(data[data['ProdApp - GM Gen 12'] != 'Accepted'].index, inplace=True)
+#    for index in range(data_rows):
+#        print(data_read_in.iloc[index])
+#        ws.append(data_read_in.iloc[index])
+#        print(index)
+
 
     # Convert the dataframe to an XlsxWriter Excel object. We also turn off the
     # index column at the left of the output dataframe.
-    data.to_excel(writer, sheet_name='RAW Data', index=False)
+#    data_read_in.to_excel(writer, sheet_name='RAW Data', index=False)
 
     # Close the Pandas Excel writer and output the Excel file.
-    writer.save()
+#    writer.save()
 
 
 
@@ -52,8 +68,6 @@ def FilterReqTraceReport(file_name, path_len, des_directory):
 files = glob.glob(src_folder_path + file_type)
 proces_this_file = max(files, key=os.path.getctime)
 print('Processing the file - ' + proces_this_file)
-
-
 
 # start filtering the trace report
 FilterReqTraceReport(proces_this_file, len(src_folder_path), des_folder_path)
