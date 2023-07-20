@@ -28,41 +28,12 @@ def FilterReqTraceReport(file_name, path_len, des_directory):
     data_read_in.drop(data_read_in[data_read_in['ProdApp - GM Gen 12'] != 'Accepted'].index, inplace=True)
 
     data_read_in.reset_index(drop=True)
+#   data_rows = len(data_read_in.index)
 
-    data_rows = len(data_read_in.index)
- #   print(f"data_read_in has {data_rows} rows")
-
-    # New method:
-    # append a new sheet to a template file
-    # book = load_workbook(new_file_name)
-    # writer = pd.ExcelWriter(new_file_name, engine='openpyxl')
-    # writer.book = book
-    # writer.sheets = dict((ws.title, ws) for ws in book.worksheets)
-
-    # Original method:
-    # create a new file or overwrite it
-    # Create a Pandas Excel writer using XlsxWriter as the engine.
-#with pd.ExcelWriter(new_file_name, engine='xlsxwriter') as writer:
-
+    # Write the filtered data to a new xls file
+    # Is there a way to trigger data resync?
     with pd.ExcelWriter(new_file_name, mode='a', engine='openpyxl', if_sheet_exists='replace') as writer:
-        data_read_in.to_excel(writer, sheet_name="RAW Data")
-#    ws = writer["RAW Data"]
-#    ws.delete_rows(0, 10)
-
-#    for index in range(data_rows):
-#        print(data_read_in.iloc[index])
-#        ws.append(data_read_in.iloc[index])
-#        print(index)
-
-
-    # Convert the dataframe to an XlsxWriter Excel object. We also turn off the
-    # index column at the left of the output dataframe.
-#    data_read_in.to_excel(writer, sheet_name='RAW Data', index=False)
-
-    # Close the Pandas Excel writer and output the Excel file.
-#    writer.save()
-
-
+        data_read_in.to_excel(writer, sheet_name="RAW Data", index=False)
 
 # Find the latest file in the folder \\fr05245vma\Reports\GM\Traceability_reports\
 files = glob.glob(src_folder_path + file_type)
